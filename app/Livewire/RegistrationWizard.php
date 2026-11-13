@@ -274,6 +274,7 @@ class RegistrationWizard extends Component
     public function previousStep(): void
     {
         if ($this->currentStep === 1 && $this->currentSubStep === 1) {
+            $this->redirectRoute('index');
             return;
         }
         if ($this->currentStep >= 6) {

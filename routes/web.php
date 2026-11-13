@@ -7,7 +7,7 @@ use App\Livewire\RegistrationWizard;
 
 Route::get('/', function () {
     return view('index');
-});
+})->name('index');
 
 Route::livewire('/daftar', RegistrationWizard::class)->name('daftar');
 Route::get('/daftar/cetak-bukti/{nomor}', function (string $nomor) {
