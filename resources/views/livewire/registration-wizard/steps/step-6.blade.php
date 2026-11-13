@@ -4,7 +4,7 @@
             <path d="M0 0h24v24H0z" fill="none" />
             <path class="fill-green-500" d="M9 16.17L4.83 12l-1.42 1.41L9 19L21 7l-1.41-1.41z" />
         </svg>
-        <h1 class="text-green-500 text-xl font-bold">Sukses! Pendaftaran Berhasil</h1>
+        <h1 class="text-green-500 text-xl font-bold">Sukses!</h1>
         @if ($registeredSiswa)
             <div class="mt-2 text-center text-sm text-base-content/80">
                 <p>Nomor Pendaftaran: <span class="font-bold text-base-content">{{ $registeredSiswa->nomor_pendaftaran }}</span></p>

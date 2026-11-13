@@ -60,5 +60,5 @@ it('redirects to cetak bukti when registered siswa exists', function () {
         ->set('currentSubStep', 1)
         ->set('registeredSiswa', $siswa)
         ->call('cetakBuktiPendaftaran')
-        ->assertRedirect(route('pendaftaran.cetak-bukti', ['nomor' => 'REG-2026-TEST01']));
+        ->assertFileDownloaded("bukti-pendaftaran-{$siswa->nomor_pendaftaran}.pdf");
 });

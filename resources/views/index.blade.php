@@ -29,12 +29,12 @@
 
         <!-- 6 Kartu (Responsif: 2 kolom di HP, 3 di tablet, 6 di desktop) -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mt-16 md:mt-24">
-            <div class="bg-[#7396B3] h-48 md:h-64 rounded-sm shadow-inner"></div>
-            <div class="bg-[#7396B3] h-48 md:h-64 rounded-sm shadow-inner"></div>
-            <div class="bg-[#7396B3] h-48 md:h-64 rounded-sm shadow-inner"></div>
-            <div class="bg-[#7396B3] h-48 md:h-64 rounded-sm shadow-inner"></div>
-            <div class="bg-[#7396B3] h-48 md:h-64 rounded-sm shadow-inner"></div>
-            <div class="bg-[#7396B3] h-48 md:h-64 rounded-sm shadow-inner"></div>
+            <x-card-agenda agenda="pendaftaran" currentAgenda/>
+            <x-card-agenda agenda="verifikasi"/>
+            <x-card-agenda agenda="aktivasi"/>
+            <x-card-agenda agenda="daftar_sekolah"/>
+            <x-card-agenda agenda="hasil_seleksi"/>
+            <x-card-agenda agenda="daftar_ulang"/>
         </div>
     </section>
 
@@ -43,9 +43,21 @@
         <h2 class="text-white text-2xl md:text-3xl font-bold text-center">Live Statistik</h2>
 
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-8">
-            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md shadow-sm"></div>
-            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md shadow-sm"></div>
-            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md shadow-sm"></div>
+            {{-- Total Pendaftar --}}
+            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md flex flex-col items-center justify-center p-4">
+                <span class="text-white text-5xl font-bold">56</span>
+                <span class="mt-3 text-white font-medium">Total Pendaftar</span>
+            </div>
+            {{-- Pendaftar Hari Ini  --}}
+            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md flex flex-col items-center justify-center p-4">
+                <span class="text-white text-5xl font-bold">70</span>
+                <span class="mt-3 text-white font-medium">Pendaftar Hari Ini</span>
+            </div>
+            {{-- Total Kuota --}}
+            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md flex flex-col items-center justify-center p-4">
+                <span class="text-white text-5xl font-bold">80</span>
+                <span class="mt-3 text-white font-medium">Total Kuota Tersedia</span>
+            </div>
         </div>
     </section>
 
