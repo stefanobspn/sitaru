@@ -27,3 +27,6 @@ Homestead.yaml
 Thumbs.db
 .phpstorm.meta.php
 _ide_helper_models.php
+.agents/
+.claude/
+.junie/
