@@ -18,11 +18,13 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\FileUploadConfiguration;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Throwable;
 
 class RegistrationWizard extends Component
 {
@@ -30,7 +32,7 @@ class RegistrationWizard extends Component
 
     protected function createDummyTemporaryFile(string $filename = 'dokumen.pdf'): TemporaryUploadedFile
     {
-        // Beri header %PDF-1.4 agar PHP finfo mendeteksi MIME type PDF yang valid
+        // Beri header %PDF-1.4 agar PHP info mendeteksi MIME type PDF yang valid
         $fakeFile = UploadedFile::fake()->createWithContent(
             $filename,
             "%PDF-1.4 \n" . str_repeat('dummy content ', 100)
@@ -60,6 +62,7 @@ class RegistrationWizard extends Component
             $this->kontakDomisili->statusDomisili = StatusDomisili::SesuaiDomisiliPantiAsuhan->value;
             $this->moveToPinPointStep();
             $this->kontakDomisili->pastedCoordinate = '-7.556123, 110.823456';
+            $this->renderCoordinate();
             $this->nextStep();
 
             // step-3
@@ -84,8 +87,7 @@ class RegistrationWizard extends Component
             $this->berkas->suratKeteranganNilaiRapor = $this->createDummyTemporaryFile('fake.pdf');
             $this->nextStep();
 
-            //step-5
-            $this->nextStep();
+            // step-5: tetap di step 5 untuk kemudahan pengujian form konfirmasi & submit
         }
     }
 
@@ -173,86 +175,100 @@ class RegistrationWizard extends Component
             return;
         }
 
-        $this->registeredSiswa = DB::transaction(function () {
-            $totalNilai = 0;
-            $count = 0;
-            foreach ($this->akademikPrestasi->nilaiRapor as $semesters) {
-                foreach ($semesters as $nilai) {
-                    $totalNilai += (float) $nilai;
-                    $count++;
+        // Pastikan latitude & longitude terisi jika pastedCoordinate ada
+        if (($this->kontakDomisili->latitude === null || $this->kontakDomisili->longitude === null) && filled($this->kontakDomisili->pastedCoordinate)) {
+            $this->kontakDomisili->renderCoordinate();
+        }
+
+        try {
+            $this->registeredSiswa = DB::transaction(function () {
+                $totalNilai = 0;
+                $count = 0;
+                foreach ($this->akademikPrestasi->nilaiRapor as $semesters) {
+                    foreach ($semesters as $nilai) {
+                        $totalNilai += (float) $nilai;
+                        $count++;
+                    }
                 }
-            }
 
-            $rataRata = $count > 0 ? round($totalNilai / $count, 2) : 0;
+                $rataRata = $count > 0 ? round($totalNilai / $count, 2) : 0;
 
-            $nomorPendaftaran = 'REG-' . date('Y') . '-' . strtoupper(Str::random(6));
+                $nomorPendaftaran = 'REG-' . date('Y') . '-' . strtoupper(Str::random(6));
 
-            $folderBerkas = 'berkas-pendaftaran/' . $this->biodata->nisn;
+                $folderBerkas = 'berkas-pendaftaran/' . $this->biodata->nisn;
 
-            $pathSuratPernyataan = $this->berkas->suratPernyataanKebenaran?->store($folderBerkas, 'public') ?? '';
-            $pathKartuKeluarga = $this->berkas->kartuKeluarga?->store($folderBerkas, 'public') ?? '';
-            $pathSuratRapor = $this->berkas->suratKeteranganNilaiRapor?->store($folderBerkas, 'public') ?? '';
+                $pathSuratPernyataan = $this->berkas->suratPernyataanKebenaran?->store($folderBerkas, 'public') ?? '';
+                $pathKartuKeluarga = $this->berkas->kartuKeluarga?->store($folderBerkas, 'public') ?? '';
+                $pathSuratRapor = $this->berkas->suratKeteranganNilaiRapor?->store($folderBerkas, 'public') ?? '';
 
-            $pathPiagam = $this->berkas->piagamPrestasi
-                ? $this->berkas->piagamPrestasi->store($folderBerkas, 'public')
-                : null;
+                $pathPiagam = $this->berkas->piagamPrestasi
+                    ? $this->berkas->piagamPrestasi->store($folderBerkas, 'public')
+                    : null;
 
-            $pathSkOrganisasi = $this->berkas->skOrganisasi
-                ? $this->berkas->skOrganisasi->store($folderBerkas, 'public')
-                : null;
+                $pathSkOrganisasi = $this->berkas->skOrganisasi
+                    ? $this->berkas->skOrganisasi->store($folderBerkas, 'public')
+                    : null;
 
-            $siswa = $this->biodata->biodataDitemukan;
+                $siswa = $this->biodata->biodataDitemukan;
 
-            return RegisteredSiswa::create([
-                'nomor_pendaftaran' => $nomorPendaftaran,
-                'biodata_siswa_id'  => $siswa['id'] ?? null,
-                'nisn'              => $this->biodata->nisn,
-                'nik'               => $this->biodata->nik,
-                'nama_lengkap'      => $siswa['nama_lengkap'] ?? '',
-                'nama_sekolah_asal' => $siswa['nama_sekolah_asal'] ?? '',
-                'tahun_lulus'       => $this->biodata->tahunLulus,
-                'wilayah_sekolah_asal' => $this->biodata->wilayahSekolahAsal,
-                'no_whatsapp'       => $this->kontakDomisili->noWhatsapp,
-                'email'             => $this->kontakDomisili->email,
-                'status_domisili'   => $this->kontakDomisili->statusDomisili,
-                'tgl_cetak_kk'      => $this->kontakDomisili->tglCetakKk ?: null,
-                'pasted_coordinate' => $this->kontakDomisili->pastedCoordinate,
-                'latitude'          => $this->kontakDomisili->latitude,
-                'longitude'         => $this->kontakDomisili->longitude,
-                'nilai_rapor'           => $this->akademikPrestasi->nilaiRapor,
-                'rata_rata_nilai_rapor' => $rataRata,
-                'status_khusus'         => $this->akademikPrestasi->statusKhusus,
-                'status_prestasi'       => $this->akademikPrestasi->statusPrestasi,
-                'kategori_event_prestasi' => $this->akademikPrestasi->kategoriEventPrestasi ?: null,
-                'tingkat_kejuaraan_berjenjang' => $this->akademikPrestasi->tingkatKejuaraanBerjenjang ?: null,
-                'nama_kejuaraan_berjenjang'    => $this->akademikPrestasi->namaKejuaraanBerjenjang ?: null,
-                'peringkat_juara_berjenjang'   => $this->akademikPrestasi->peringkatJuaraBerjenjang ?: null,
-                'tahun_perolehan_kejuaraan_berjenjang' => $this->akademikPrestasi->tahunPerolehanKejuaraanBerjenjang ?: null,
-                'penyelenggara_kejuaraan_berjenjang'   => $this->akademikPrestasi->penyelenggaraKejuaraanBerjenjang ?: null,
-                'status_kepengurusan_organisasi'       => $this->akademikPrestasi->statusKepengurusanOrganisasi,
-                'jenis_organisasi_jabatan'             => $this->akademikPrestasi->jenisOrganisasiJabatan ?: null,
-                'surat_pernyataan_kebenaran_path' => $pathSuratPernyataan,
-                'kartu_keluarga_path'             => $pathKartuKeluarga,
-                'surat_keterangan_nilai_rapor_path' => $pathSuratRapor,
-                'piagam_prestasi_path'            => $pathPiagam,
-                'sk_organisasi_path'              => $pathSkOrganisasi,
-                'is_activated' => false,
-            ]);
-        });
+                return RegisteredSiswa::create([
+                    'nomor_pendaftaran' => $nomorPendaftaran,
+                    'biodata_siswa_id'  => $siswa['id'] ?? null,
+                    'nisn'              => $this->biodata->nisn,
+                    'nik'               => $this->biodata->nik,
+                    'nama_lengkap'      => $siswa['nama_lengkap'] ?? '',
+                    'nama_sekolah_asal' => $siswa['nama_sekolah_asal'] ?? '',
+                    'tahun_lulus'       => $this->biodata->tahunLulus,
+                    'wilayah_sekolah_asal' => $this->biodata->wilayahSekolahAsal,
+                    'no_whatsapp'       => $this->kontakDomisili->noWhatsapp,
+                    'email'             => $this->kontakDomisili->email,
+                    'status_domisili'   => $this->kontakDomisili->statusDomisili,
+                    'tgl_cetak_kk'      => $this->kontakDomisili->tglCetakKk ?: null,
+                    'pasted_coordinate' => $this->kontakDomisili->pastedCoordinate,
+                    'latitude'          => $this->kontakDomisili->latitude,
+                    'longitude'         => $this->kontakDomisili->longitude,
+                    'nilai_rapor'           => $this->akademikPrestasi->nilaiRapor,
+                    'rata_rata_nilai_rapor' => $rataRata,
+                    'status_khusus'         => $this->akademikPrestasi->statusKhusus,
+                    'status_prestasi'       => $this->akademikPrestasi->statusPrestasi,
+                    'kategori_event_prestasi' => $this->akademikPrestasi->kategoriEventPrestasi ?: null,
+                    'tingkat_kejuaraan_berjenjang' => $this->akademikPrestasi->tingkatKejuaraanBerjenjang ?: null,
+                    'nama_kejuaraan_berjenjang'    => $this->akademikPrestasi->namaKejuaraanBerjenjang ?: null,
+                    'peringkat_juara_berjenjang'   => $this->akademikPrestasi->peringkatJuaraBerjenjang ?: null,
+                    'tahun_perolehan_kejuaraan_berjenjang' => $this->akademikPrestasi->tahunPerolehanKejuaraanBerjenjang ?: null,
+                    'penyelenggara_kejuaraan_berjenjang'   => $this->akademikPrestasi->penyelenggaraKejuaraanBerjenjang ?: null,
+                    'status_kepengurusan_organisasi'       => $this->akademikPrestasi->statusKepengurusanOrganisasi,
+                    'jenis_organisasi_jabatan'             => $this->akademikPrestasi->jenisOrganisasiJabatan ?: null,
+                    'surat_pernyataan_kebenaran_path' => $pathSuratPernyataan,
+                    'kartu_keluarga_path'             => $pathKartuKeluarga,
+                    'surat_keterangan_nilai_rapor_path' => $pathSuratRapor,
+                    'piagam_prestasi_path'            => $pathPiagam,
+                    'sk_organisasi_path'              => $pathSkOrganisasi,
+                    'is_activated' => false,
+                ]);
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            $this->addError('pernyataanSetuju', 'Terjadi kesalahan saat memproses pendaftaran. Silakan coba lagi.');
+            return;
+        }
 
         $this->nextStep();
     }
 
     public function cetakBuktiPendaftaran()
     {
-        // TODO: write this shit
-        if (!$this->registeredSiswa) {
+        if (! $this->registeredSiswa) {
             return;
         }
 
-        return redirect()->route('pendaftaran.cetak-bukti', [
-            'nomor' => $this->registeredSiswa->nomor_pendaftaran
-        ]);
+        if (Route::has('pendaftaran.cetak-bukti')) {
+            return redirect()->route('pendaftaran.cetak-bukti', [
+                'nomor' => $this->registeredSiswa->nomor_pendaftaran,
+            ]);
+        }
+
+        session()->flash('info', 'Pendaftaran berhasil dengan nomor: ' . $this->registeredSiswa->nomor_pendaftaran);
     }
 
     public function previousStep(): void
