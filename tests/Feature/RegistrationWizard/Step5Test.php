@@ -111,3 +111,44 @@ it('submits registration and advances to step 6', function () {
         ->assertSet('currentStep', 6)
         ->assertSet('currentSubStep', 1);
 });
+
+it('fails validation when agreement is not checked', function () {
+    step5Wizard()
+        ->set('pernyataanSetuju', false)
+        ->call('submitPendaftaran')
+        ->assertHasErrors(['pernyataanSetuju'])
+        ->assertSet('currentStep', 5);
+});
+
+it('prevents submission when NISN is already registered', function () {
+    \App\Models\RegisteredSiswa::create([
+        'nomor_pendaftaran' => 'REG-EXISTING-01',
+        'nisn' => '1234567890',
+        'nik' => '3301234567890001',
+        'nama_lengkap' => 'Existing Siswa',
+        'nama_sekolah_asal' => 'SMP Asal',
+        'tahun_lulus' => '2026',
+        'wilayah_sekolah_asal' => 'dalam_kota',
+        'no_whatsapp' => '08123456789',
+        'email' => 'existing@example.com',
+        'status_domisili' => 'sesuai_kk',
+        'pasted_coordinate' => '-7.556, 110.823',
+        'latitude' => -7.556,
+        'longitude' => 110.823,
+        'nilai_rapor' => [],
+        'rata_rata_nilai_rapor' => 85.0,
+        'status_khusus' => 'tidak_ada',
+        'status_prestasi' => 'tidak_memiliki',
+        'status_kepengurusan_organisasi' => 'tidak_pernah',
+        'surat_pernyataan_kebenaran_path' => 'fake.pdf',
+        'kartu_keluarga_path' => 'fake.pdf',
+        'surat_keterangan_nilai_rapor_path' => 'fake.pdf',
+        'is_activated' => false,
+    ]);
+
+    step5Wizard()
+        ->set('pernyataanSetuju', true)
+        ->call('submitPendaftaran')
+        ->assertHasErrors(['pernyataanSetuju'])
+        ->assertSet('currentStep', 5);
+});

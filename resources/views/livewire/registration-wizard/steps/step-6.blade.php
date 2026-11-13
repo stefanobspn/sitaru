@@ -4,7 +4,19 @@
             <path d="M0 0h24v24H0z" fill="none" />
             <path class="fill-green-500" d="M9 16.17L4.83 12l-1.42 1.41L9 19L21 7l-1.41-1.41z" />
         </svg>
-        <h1 class="text-green-500 text-xl">Sukses!</h1>
+        <h1 class="text-green-500 text-xl font-bold">Sukses! Pendaftaran Berhasil</h1>
+        @if ($registeredSiswa)
+            <div class="mt-2 text-center text-sm text-base-content/80">
+                <p>Nomor Pendaftaran: <span class="font-bold text-base-content">{{ $registeredSiswa->nomor_pendaftaran }}</span></p>
+                <p>Nama: <span class="font-semibold text-base-content">{{ $registeredSiswa->nama_lengkap }}</span></p>
+            </div>
+        @endif
+
+        @if (session()->has('info'))
+            <div class="alert alert-info mt-4 py-2 px-4 text-sm max-w-md">
+                {{ session('info') }}
+            </div>
+        @endif
         <button wire:click="cetakBuktiPendaftaran" class="btn btn-primary mt-4">
             <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0z" fill="none" />

@@ -1,4 +1,7 @@
-{{--AI Generated--}}
+@assets
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+@endassets
 
 @php
     use App\Enums\StatusDomisili;
@@ -290,17 +293,23 @@
     </div>
 
     {{-- Bottom Action Bar: Pernyataan & Submit --}}
-    <div class="bg-primary/5 border border-primary/20 rounded-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <label class="cursor-pointer flex items-start gap-3">
-            <input type="checkbox" wire:model="pernyataanSetuju" class="checkbox checkbox-primary mt-0.5" required />
-            <span class="text-sm text-base-content leading-snug">
-                Saya menyatakan bahwa semua data yang saya isi dan berkas yang saya unggah adalah benar dan dapat dipertanggungjawabkan.
-            </span>
-        </label>
+    <div class="bg-primary/5 border border-primary/20 rounded-sm p-5 flex flex-col gap-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <label class="cursor-pointer flex items-start gap-3">
+                <input type="checkbox" wire:model="pernyataanSetuju" class="checkbox checkbox-primary mt-0.5" required />
+                <span class="text-sm text-base-content leading-snug">
+                    Saya menyatakan bahwa semua data yang saya isi dan berkas yang saya unggah adalah benar dan dapat dipertanggungjawabkan.
+                </span>
+            </label>
 
-        <button wire:click="submitPendaftaran" class="btn btn-primary w-full sm:w-auto px-8 shrink-0">
-            Daftar Sekarang
-        </button>
+            <button wire:click="submitPendaftaran" class="btn btn-primary w-full sm:w-auto px-8 shrink-0">
+                Daftar Sekarang
+            </button>
+        </div>
+
+        @error('pernyataanSetuju')
+            <p class="text-error text-sm font-medium">{{ $message }}</p>
+        @enderror
     </div>
 
 </div>
