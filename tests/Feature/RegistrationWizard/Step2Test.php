@@ -84,3 +84,128 @@ it('moves to step 3 when confirmation button is clicked', function () {
         ->assertSet('currentStep', 3)
         ->assertSet('currentSubStep', 1);
 });
+
+it('validates required fields for SesuaiMutasiOrtuWali before moving to pinpoint step', function () {
+    Livewire::test(RegistrationWizard::class)
+        ->set('currentStep', 2)
+        ->set('currentSubStep', 1)
+        ->set('kontakDomisili.noWhatsapp', '081234567890')
+        ->set('kontakDomisili.email', 'siswa@example.com')
+        ->set('kontakDomisili.statusDomisili', StatusDomisili::SesuaiMutasiOrtuWali->value)
+        ->set('kontakDomisili.namaInstansiMutasi', '')
+        ->set('kontakDomisili.nomorSuratPenugasan', '')
+        ->set('kontakDomisili.tglSuratPenugasan', '')
+        ->set('kontakDomisili.nomorSkDomisili', '')
+        ->call('moveToPinPointStep')
+        ->assertHasErrors([
+            'kontakDomisili.namaInstansiMutasi' => 'required_if',
+            'kontakDomisili.nomorSuratPenugasan' => 'required_if',
+            'kontakDomisili.tglSuratPenugasan' => 'required_if',
+            'kontakDomisili.nomorSkDomisili' => 'required_if',
+        ])
+        ->assertSet('currentSubStep', 1);
+});
+
+it('validates required fields for SesuaiDomisiliPondok before moving to pinpoint step', function () {
+    Livewire::test(RegistrationWizard::class)
+        ->set('currentStep', 2)
+        ->set('currentSubStep', 1)
+        ->set('kontakDomisili.noWhatsapp', '081234567890')
+        ->set('kontakDomisili.email', 'siswa@example.com')
+        ->set('kontakDomisili.statusDomisili', StatusDomisili::SesuaiDomisiliPondok->value)
+        ->set('kontakDomisili.namaPondokPesantren', '')
+        ->set('kontakDomisili.nomorIzinPondokEmis', '')
+        ->set('kontakDomisili.jenjangPondok', '')
+        ->call('moveToPinPointStep')
+        ->assertHasErrors([
+            'kontakDomisili.namaPondokPesantren' => 'required_if',
+            'kontakDomisili.nomorIzinPondokEmis' => 'required_if',
+            'kontakDomisili.jenjangPondok' => 'required_if',
+        ])
+        ->assertSet('currentSubStep', 1);
+});
+
+it('validates required fields for SesuaiDomisiliPantiAsuhan before moving to pinpoint step', function () {
+    Livewire::test(RegistrationWizard::class)
+        ->set('currentStep', 2)
+        ->set('currentSubStep', 1)
+        ->set('kontakDomisili.noWhatsapp', '081234567890')
+        ->set('kontakDomisili.email', 'siswa@example.com')
+        ->set('kontakDomisili.statusDomisili', StatusDomisili::SesuaiDomisiliPantiAsuhan->value)
+        ->set('kontakDomisili.namaPantiAsuhan', '')
+        ->set('kontakDomisili.nomorRegistrasiDinsos', '')
+        ->set('kontakDomisili.prioritasPanti', '')
+        ->call('moveToPinPointStep')
+        ->assertHasErrors([
+            'kontakDomisili.namaPantiAsuhan' => 'required_if',
+            'kontakDomisili.nomorRegistrasiDinsos' => 'required_if',
+            'kontakDomisili.prioritasPanti' => 'required_if',
+        ])
+        ->assertSet('currentSubStep', 1);
+});
+
+it('advances to pinpoint substep when SesuaiMutasiOrtuWali fields are valid', function () {
+    Livewire::test(RegistrationWizard::class)
+        ->set('currentStep', 2)
+        ->set('currentSubStep', 1)
+        ->set('kontakDomisili.noWhatsapp', '081234567890')
+        ->set('kontakDomisili.email', 'siswa@example.com')
+        ->set('kontakDomisili.statusDomisili', StatusDomisili::SesuaiMutasiOrtuWali->value)
+        ->set('kontakDomisili.namaInstansiMutasi', 'PT PLN Persero')
+        ->set('kontakDomisili.nomorSuratPenugasan', 'SK/123/2026')
+        ->set('kontakDomisili.tglSuratPenugasan', '2026-01-10')
+        ->set('kontakDomisili.nomorSkDomisili', 'SKD/456/2026')
+        ->set('kontakDomisili.isAnakGuru', true)
+        ->call('moveToPinPointStep')
+        ->assertHasNoErrors()
+        ->assertSet('currentSubStep', 2);
+});
+
+it('advances to pinpoint substep when SesuaiDomisiliPondok fields are valid', function () {
+    Livewire::test(RegistrationWizard::class)
+        ->set('currentStep', 2)
+        ->set('currentSubStep', 1)
+        ->set('kontakDomisili.noWhatsapp', '081234567890')
+        ->set('kontakDomisili.email', 'siswa@example.com')
+        ->set('kontakDomisili.statusDomisili', StatusDomisili::SesuaiDomisiliPondok->value)
+        ->set('kontakDomisili.namaPondokPesantren', 'Ponpes Al-Huda')
+        ->set('kontakDomisili.nomorIzinPondokEmis', 'EMIS-987654')
+        ->set('kontakDomisili.jenjangPondok', 'PKPPS')
+        ->call('moveToPinPointStep')
+        ->assertHasNoErrors()
+        ->assertSet('currentSubStep', 2);
+});
+
+it('allows empty tglCetakKk when statusDomisili is not SesuaiKK but other fields are valid', function () {
+    Livewire::test(RegistrationWizard::class)
+        ->set('currentStep', 2)
+        ->set('currentSubStep', 1)
+        ->set('kontakDomisili.noWhatsapp', '081234567890')
+        ->set('kontakDomisili.email', 'siswa@example.com')
+        ->set('kontakDomisili.statusDomisili', StatusDomisili::SesuaiDomisiliPantiAsuhan->value)
+        ->set('kontakDomisili.tglCetakKk', '')
+        ->set('kontakDomisili.namaPantiAsuhan', 'Panti Asuhan Kasih Ibu')
+        ->set('kontakDomisili.nomorRegistrasiDinsos', 'REG-DS-12345')
+        ->set('kontakDomisili.prioritasPanti', 'Prioritas 1 (P1)')
+        ->call('moveToPinPointStep')
+        ->assertHasNoErrors()
+        ->assertSet('currentSubStep', 2);
+});
+
+it('navigates back from step 2 substep 2 to step 2 substep 1', function () {
+    Livewire::test(RegistrationWizard::class)
+        ->set('currentStep', 2)
+        ->set('currentSubStep', 2)
+        ->call('previousStep')
+        ->assertSet('currentStep', 2)
+        ->assertSet('currentSubStep', 1);
+});
+
+it('navigates back from step 2 substep 1 to step 1 substep 2', function () {
+    Livewire::test(RegistrationWizard::class)
+        ->set('currentStep', 2)
+        ->set('currentSubStep', 1)
+        ->call('previousStep')
+        ->assertSet('currentStep', 1)
+        ->assertSet('currentSubStep', 2);
+});

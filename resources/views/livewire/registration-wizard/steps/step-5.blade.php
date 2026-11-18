@@ -103,6 +103,55 @@
                                 {{ $kontakDomisili->tglCetakKk ? Carbon::parse($kontakDomisili->tglCetakKk)->translatedFormat('d F Y') : '-' }}
                             </dd>
                         </div>
+                    @elseif($kontakDomisili->statusDomisili === StatusDomisili::SesuaiMutasiOrtuWali->value)
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">Instansi Penugasan</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->namaInstansiMutasi ?: '-' }}</dd>
+                        </div>
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">No. Surat Penugasan</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->nomorSuratPenugasan ?: '-' }}</dd>
+                        </div>
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">Tgl. Surat Penugasan</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">
+                                {{ $kontakDomisili->tglSuratPenugasan ? Carbon::parse($kontakDomisili->tglSuratPenugasan)->translatedFormat('d F Y') : '-' }}
+                            </dd>
+                        </div>
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">No. SK Domisili Desa</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->nomorSkDomisili ?: '-' }}</dd>
+                        </div>
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">Anak Guru / Tendik</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->isAnakGuru ? 'Ya' : 'Tidak' }}</dd>
+                        </div>
+                    @elseif($kontakDomisili->statusDomisili === StatusDomisili::SesuaiDomisiliPondok->value)
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">Pondok Pesantren</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->namaPondokPesantren ?: '-' }}</dd>
+                        </div>
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">No. Izin EMIS/NSPP</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->nomorIzinPondokEmis ?: '-' }}</dd>
+                        </div>
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">Jenjang Pondok</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->jenjangPondok ?: '-' }}</dd>
+                        </div>
+                    @elseif($kontakDomisili->statusDomisili === StatusDomisili::SesuaiDomisiliPantiAsuhan->value)
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">Panti Asuhan</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->namaPantiAsuhan ?: '-' }}</dd>
+                        </div>
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">No. Registrasi Dinsos</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->nomorRegistrasiDinsos ?: '-' }}</dd>
+                        </div>
+                        <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            <dt class="font-medium text-base-content/70">Prioritas Panti</dt>
+                            <dd class="font-semibold text-base-content text-left sm:text-right sm:col-span-2">{{ $kontakDomisili->prioritasPanti ?: '-' }}</dd>
+                        </div>
                     @endif
 
                     <div class="py-2.5 grid grid-cols-1 sm:grid-cols-3 gap-1">
@@ -159,7 +208,13 @@
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
             {{-- Left: Nilai Rapor Table --}}
             <div class="xl:col-span-7">
-                <h3 class="text-sm font-semibold text-base-content mb-3">Nilai Rapor Semester 1 s.d 5</h3>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-base-content">Nilai Rapor Semester 1 s.d 5</h3>
+                    @php
+                        $step5Nrtka = (float) ($siswa['nrtka'] ?? 0);
+                        $step5Na = $akademikPrestasi->hitungNilaiAkhir($step5Nrtka);
+                    @endphp
+                </div>
                 <div class="overflow-x-auto border border-slate-300 rounded-sm">
                     <table class="table table-zebra table-sm w-full">
                         <thead class="bg-base-200/70 text-base-content">
@@ -230,6 +285,31 @@
                                     <dt class="text-base-content/70">Penyelenggara</dt>
                                     <dd class="font-semibold text-base-content text-right">{{ $akademikPrestasi->penyelenggaraKejuaraanBerjenjang ?: '-' }}</dd>
                                 </div>
+                            @elseif($akademikPrestasi->kategoriEventPrestasi === KategoriEventPrestasi::TidakBerjenjang->value)
+                                <div class="py-2 flex justify-between gap-2">
+                                    <dt class="text-base-content/70">Tingkat Kejuaraan</dt>
+                                    <dd class="font-semibold text-base-content text-right">{{ $akademikPrestasi->tingkatKejuaraanTidakBerjenjang ?: '-' }}</dd>
+                                </div>
+                                <div class="py-2 flex justify-between gap-2">
+                                    <dt class="text-base-content/70">Peringkat Kurasi</dt>
+                                    <dd class="font-semibold text-base-content text-right">{{ $akademikPrestasi->peringkatKurasiTidakBerjenjang ?: '-' }}</dd>
+                                </div>
+                                <div class="py-2 flex justify-between gap-2">
+                                    <dt class="text-base-content/70">Nama Kejuaraan</dt>
+                                    <dd class="font-semibold text-base-content text-right">{{ $akademikPrestasi->namaKejuaraanTidakBerjenjang ?: '-' }}</dd>
+                                </div>
+                                <div class="py-2 flex justify-between gap-2">
+                                    <dt class="text-base-content/70">Peringkat Juara</dt>
+                                    <dd class="font-semibold text-base-content text-right">{{ $akademikPrestasi->peringkatJuaraTidakBerjenjang ?: '-' }}</dd>
+                                </div>
+                                <div class="py-2 flex justify-between gap-2">
+                                    <dt class="text-base-content/70">Tahun Perolehan</dt>
+                                    <dd class="font-semibold text-base-content text-right">{{ $akademikPrestasi->tahunPerolehanKejuaraanTidakBerjenjang ?: '-' }}</dd>
+                                </div>
+                                <div class="py-2 flex justify-between gap-2">
+                                    <dt class="text-base-content/70">Penyelenggara</dt>
+                                    <dd class="font-semibold text-base-content text-right">{{ $akademikPrestasi->penyelenggaraKejuaraanTidakBerjenjang ?: '-' }}</dd>
+                                </div>
                             @endif
                         @endif
 
@@ -245,6 +325,25 @@
                                 <dd class="font-semibold text-base-content text-right">{{ $akademikPrestasi->jenisOrganisasiJabatan ?: '-' }}</dd>
                             </div>
                         @endif
+
+                        <div class="py-2 flex justify-between gap-2 border-t border-slate-200">
+                            <dt class="font-medium text-base-content/80">Nilai Prestasi/Kejuaraan (NK)</dt>
+                            <dd class="font-bold text-blue-700 text-right">{{ $akademikPrestasi->getFormattedNK() }}</dd>
+                        </div>
+                        <div class="py-2 flex justify-between gap-2">
+                            <dt class="font-medium text-base-content/80">Nilai Organisasi (NO)</dt>
+                            <dd class="font-bold text-blue-700 text-right">{{ $akademikPrestasi->getFormattedNO() }}</dd>
+                        </div>
+                        <div class="py-2 flex justify-between gap-2">
+                            <dt class="font-medium text-base-content/80">Nilai TKA (NRTKA)</dt>
+                            <dd class="font-bold text-emerald-700 text-right">{{ number_format($step5Nrtka, 2) }}</dd>
+                        </div>
+                        <div class="py-2 flex justify-between gap-2 border-t border-slate-200">
+                            <dt class="font-bold text-base-content">Nilai Akhir (NA)</dt>
+                            <dd class="font-bold text-primary text-right">
+                                {{ is_numeric($step5Na) ? number_format($step5Na, 2) : $step5Na }}
+                            </dd>
+                        </div>
                     </dl>
                 </div>
             </div>
@@ -295,8 +394,8 @@
     {{-- Bottom Action Bar: Pernyataan & Submit --}}
     <div class="bg-primary/5 border border-primary/20 rounded-sm p-5 flex flex-col gap-3">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <label class="cursor-pointer flex items-start gap-3">
-                <input type="checkbox" wire:model="pernyataanSetuju" class="checkbox checkbox-primary mt-0.5" required />
+            <label class="cursor-pointer flex items-start gap-3" for="pernyataan_setuju">
+                <input type="checkbox" id="pernyataan_setuju" name="pernyataan_setuju" wire:model="pernyataanSetuju" class="checkbox checkbox-primary mt-0.5" required />
                 <span class="text-sm text-base-content leading-snug">
                     Saya menyatakan bahwa semua data yang saya isi dan berkas yang saya unggah adalah benar dan dapat dipertanggungjawabkan.
                 </span>

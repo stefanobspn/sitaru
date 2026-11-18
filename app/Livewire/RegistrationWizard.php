@@ -14,6 +14,7 @@ use App\Livewire\Forms\KontakDomisiliSiswaForm;
 use App\Livewire\Forms\UnggahBerkasSiswaForm;
 use App\Models\BiodataSiswa;
 use App\Models\RegisteredSiswa;
+use App\Services\ScheduleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -47,7 +48,7 @@ class RegistrationWizard extends Component
 
     public function mount(): void
     {
-        if (app()->isLocal()) {
+        if (app()->isLocal() && request()->has('debug_wizard')) {
             // step-1
             $dummy = BiodataSiswa::factory()->create();
 
@@ -62,6 +63,9 @@ class RegistrationWizard extends Component
             $this->kontakDomisili->noWhatsapp = '0123456789';
             $this->kontakDomisili->email = fake()->email();
             $this->kontakDomisili->statusDomisili = StatusDomisili::SesuaiDomisiliPantiAsuhan->value;
+            $this->kontakDomisili->namaPantiAsuhan = 'Panti Asuhan Kasih Ibu';
+            $this->kontakDomisili->nomorRegistrasiDinsos = 'REG-DS-12345';
+            $this->kontakDomisili->prioritasPanti = 'Prioritas 1 (P1)';
             $this->moveToPinPointStep();
             $this->kontakDomisili->pastedCoordinate = '-7.556123, 110.823456';
             $this->renderCoordinate();
@@ -78,16 +82,16 @@ class RegistrationWizard extends Component
                 'inggris' => [1 => 50, 2 => 50, 3 => 50, 4 => 50, 5 => 50],
             ];
             $this->submitRaport();
-            $this->akademikPrestasi->statusKhusus = StatusKhusus::TidakAda->value;
-            $this->akademikPrestasi->statusPrestasi = StatusPrestasi::TidakMemiliki->value;
-            $this->akademikPrestasi->statusKepengurusanOrganisasi = StatusKepengurusanOrganisasi::TidakPernah->value;
-            $this->nextStep();
-
-            // step-4
-            $this->berkas->suratPernyataanKebenaran = $this->createDummyTemporaryFile('fake.pdf');
-            $this->berkas->kartuKeluarga = $this->createDummyTemporaryFile('fake.pdf');
-            $this->berkas->suratKeteranganNilaiRapor = $this->createDummyTemporaryFile('fake.pdf');
-            $this->nextStep();
+            //            $this->akademikPrestasi->statusKhusus = StatusKhusus::TidakAda->value;
+            //            $this->akademikPrestasi->statusPrestasi = StatusPrestasi::TidakMemiliki->value;
+            //            $this->akademikPrestasi->statusKepengurusanOrganisasi = StatusKepengurusanOrganisasi::TidakPernah->value;
+            //            $this->nextStep();
+            //
+            //            // step-4
+            //            $this->berkas->suratPernyataanKebenaran = $this->createDummyTemporaryFile('fake.pdf');
+            //            $this->berkas->kartuKeluarga = $this->createDummyTemporaryFile('fake.pdf');
+            //            $this->berkas->suratKeteranganNilaiRapor = $this->createDummyTemporaryFile('fake.pdf');
+            //            $this->nextStep();
         }
     }
 
@@ -119,6 +123,18 @@ class RegistrationWizard extends Component
 
     public function searchBiodata(): void
     {
+        if (! ScheduleService::isPengajuanAkunOpen()) {
+            $this->biodata->addError('searchBiodataError', ScheduleService::getAgendaErrorMessage('pendaftaran'));
+
+            return;
+        }
+
+        if (RegisteredSiswa::where('nisn', $this->biodata->nisn)->exists()) {
+            $this->biodata->addError('searchBiodataError', 'Siswa dengan NISN ini sudah pernah didaftarkan.');
+
+            return;
+        }
+
         if ($this->biodata->searchBiodata()) {
             $this->currentSubStep = 2;
         } else {
@@ -155,6 +171,13 @@ class RegistrationWizard extends Component
         $this->nextStep();
     }
 
+    public function updatedAkademikPrestasiTingkatKejuaraanBerjenjang(): void
+    {
+        if (! in_array($this->akademikPrestasi->namaKejuaraanBerjenjang, $this->akademikPrestasi->getDaftarNamaKejuaraanBerjenjangOptions(), true)) {
+            $this->akademikPrestasi->namaKejuaraanBerjenjang = '';
+        }
+    }
+
     public function nextStep(): void
     {
         $this->currentSubStep = 1;
@@ -169,6 +192,12 @@ class RegistrationWizard extends Component
 
     public function submitPendaftaran(): void
     {
+        if (! ScheduleService::isPengajuanAkunOpen()) {
+            $this->addError('pernyataanSetuju', ScheduleService::getAgendaErrorMessage('pendaftaran'));
+
+            return;
+        }
+
         $this->validate([
             'pernyataanSetuju' => ['accepted'],
         ], [
@@ -189,16 +218,7 @@ class RegistrationWizard extends Component
 
         try {
             $this->registeredSiswa = DB::transaction(function () {
-                $totalNilai = 0;
-                $count = 0;
-                foreach ($this->akademikPrestasi->nilaiRapor as $semesters) {
-                    foreach ($semesters as $nilai) {
-                        $totalNilai += (float) $nilai;
-                        $count++;
-                    }
-                }
-
-                $rataRata = $count > 0 ? round($totalNilai / $count, 2) : 0;
+                $rataRata = $this->akademikPrestasi->hitungRataRata();
 
                 $nomorPendaftaran = 'REG-'.date('Y').'-'.strtoupper(Str::random(6));
 
@@ -217,6 +237,13 @@ class RegistrationWizard extends Component
                     : null;
 
                 $siswa = $this->biodata->biodataDitemukan;
+                $nrtka = isset($siswa['nrtka']) && is_numeric($siswa['nrtka'])
+                    ? (float) $siswa['nrtka']
+                    : (float) (BiodataSiswa::where('nisn', $this->biodata->nisn)->value('nrtka') ?? fake()->randomFloat(2, 50, 90));
+
+                $nkVal = is_numeric($this->akademikPrestasi->hitungNK()) ? (float) $this->akademikPrestasi->hitungNK() : 0.0;
+                $noVal = (float) $this->akademikPrestasi->hitungNO();
+                $nilaiAkhir = round((0.5 * $rataRata) + (0.5 * $nrtka) + $nkVal + $noVal, 2);
 
                 return RegisteredSiswa::create([
                     'nomor_pendaftaran' => $nomorPendaftaran,
@@ -231,11 +258,24 @@ class RegistrationWizard extends Component
                     'email' => $this->kontakDomisili->email,
                     'status_domisili' => $this->kontakDomisili->statusDomisili,
                     'tgl_cetak_kk' => $this->kontakDomisili->tglCetakKk ?: null,
+                    'nama_instansi_mutasi' => $this->kontakDomisili->namaInstansiMutasi ?: null,
+                    'nomor_surat_penugasan' => $this->kontakDomisili->nomorSuratPenugasan ?: null,
+                    'tgl_surat_penugasan' => $this->kontakDomisili->tglSuratPenugasan ?: null,
+                    'nomor_sk_domisili' => $this->kontakDomisili->nomorSkDomisili ?: null,
+                    'is_anak_guru' => $this->kontakDomisili->isAnakGuru,
+                    'nama_pondok_pesantren' => $this->kontakDomisili->namaPondokPesantren ?: null,
+                    'nomor_izin_pondok_emis' => $this->kontakDomisili->nomorIzinPondokEmis ?: null,
+                    'jenjang_pondok' => $this->kontakDomisili->jenjangPondok ?: null,
+                    'nama_panti_asuhan' => $this->kontakDomisili->namaPantiAsuhan ?: null,
+                    'nomor_registrasi_dinsos' => $this->kontakDomisili->nomorRegistrasiDinsos ?: null,
+                    'prioritas_panti' => $this->kontakDomisili->prioritasPanti ?: null,
                     'pasted_coordinate' => $this->kontakDomisili->pastedCoordinate,
                     'latitude' => $this->kontakDomisili->latitude,
                     'longitude' => $this->kontakDomisili->longitude,
                     'nilai_rapor' => $this->akademikPrestasi->nilaiRapor,
                     'rata_rata_nilai_rapor' => $rataRata,
+                    'nrtka' => $nrtka,
+                    'nilai_akhir' => $nilaiAkhir,
                     'status_khusus' => $this->akademikPrestasi->statusKhusus,
                     'status_prestasi' => $this->akademikPrestasi->statusPrestasi,
                     'kategori_event_prestasi' => $this->akademikPrestasi->kategoriEventPrestasi ?: null,
@@ -244,8 +284,16 @@ class RegistrationWizard extends Component
                     'peringkat_juara_berjenjang' => $this->akademikPrestasi->peringkatJuaraBerjenjang ?: null,
                     'tahun_perolehan_kejuaraan_berjenjang' => $this->akademikPrestasi->tahunPerolehanKejuaraanBerjenjang ?: null,
                     'penyelenggara_kejuaraan_berjenjang' => $this->akademikPrestasi->penyelenggaraKejuaraanBerjenjang ?: null,
+                    'tingkat_kejuaraan_tidak_berjenjang' => $this->akademikPrestasi->tingkatKejuaraanTidakBerjenjang ?: null,
+                    'peringkat_kurasi_tidak_berjenjang' => $this->akademikPrestasi->peringkatKurasiTidakBerjenjang ?: null,
+                    'nama_kejuaraan_tidak_berjenjang' => $this->akademikPrestasi->namaKejuaraanTidakBerjenjang ?: null,
+                    'peringkat_juara_tidak_berjenjang' => $this->akademikPrestasi->peringkatJuaraTidakBerjenjang ?: null,
+                    'tahun_perolehan_kejuaraan_tidak_berjenjang' => $this->akademikPrestasi->tahunPerolehanKejuaraanTidakBerjenjang ?: null,
+                    'penyelenggara_kejuaraan_tidak_berjenjang' => $this->akademikPrestasi->penyelenggaraKejuaraanTidakBerjenjang ?: null,
                     'status_kepengurusan_organisasi' => $this->akademikPrestasi->statusKepengurusanOrganisasi,
                     'jenis_organisasi_jabatan' => $this->akademikPrestasi->jenisOrganisasiJabatan ?: null,
+                    'nilai_kejuaraan' => (string) $this->akademikPrestasi->getFormattedNK(),
+                    'nilai_organisasi' => $this->akademikPrestasi->hitungNO(),
                     'surat_pernyataan_kebenaran_path' => $pathSuratPernyataan,
                     'kartu_keluarga_path' => $pathKartuKeluarga,
                     'surat_keterangan_nilai_rapor_path' => $pathSuratRapor,
@@ -309,6 +357,9 @@ class RegistrationWizard extends Component
 
         return view('livewire.registration-wizard.index', [
             'maxWidth' => $isWideStep ? 'max-w-4xl' : 'max-w-md',
+            'isPengajuanAkunOpen' => ScheduleService::isPengajuanAkunOpen(),
+            'pengajuanAkunStatus' => ScheduleService::getAgendaStatus('pendaftaran'),
+            'agendaErrorMessage' => ScheduleService::getAgendaErrorMessage('pendaftaran'),
         ]);
     }
 }

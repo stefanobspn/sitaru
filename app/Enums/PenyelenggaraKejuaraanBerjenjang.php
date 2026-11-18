@@ -8,6 +8,6 @@ enum PenyelenggaraKejuaraanBerjenjang: string
 {
     use HasValues;
 
-    case BPTI = 'BPTI';
-    case NotBPTI = 'Selain BPTI';
+    case PemerintahDaerah = 'Pemerintah Daerah';
+    case KementerianLembaga = 'Kementerian / Lembaga Pemerintah Non-Kementerian';
 }

@@ -13,7 +13,15 @@
         @endif
 
         @if (session()->has('info'))
-            <div class="alert alert-info mt-4 py-2 px-4 text-sm max-w-md">
+            <div
+                x-data="{ show: true }"
+                x-show="show"
+                x-init="setTimeout(() => show = false, 5000)"
+                x-transition:leave="transition ease-in duration-300"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="alert alert-info mt-4 py-2 px-4 text-sm max-w-md"
+            >
                 {{ session('info') }}
             </div>
         @endif

@@ -106,6 +106,8 @@
 {{--                     HALAMAN 1: PETUNJUK                  --}}
 {{-- ======================================================== --}}
 <div class="halaman-1">
+    <div class="staples-box">STAPLES</div>
+
     <div class="cover-header">
         <h1 class="cover-title">BUKTI PENDAFTARAN AKUN SITARU</h1>
         <div class="cover-subtitle">NAMA: {{ strtoupper($siswa->nama_lengkap) }}</div>
@@ -229,11 +231,99 @@
             <td class="col-label">Status Domisili</td>
             <td class="col-sep">:</td>
             <td class="col-val">{{ $siswa->status_domisili }}</td>
-            <td class="col-label">Tanggal Cetak KK</td>
+            @if ($siswa->status_domisili === \App\Enums\StatusDomisili::SesuaiKK->value)
+                <td class="col-label">Tanggal Cetak KK</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->tgl_cetak_kk?->format('d/m/Y') ?? ($siswa->tgl_cetak_kk ?? '-') }}</td>
+            @elseif ($siswa->status_domisili === \App\Enums\StatusDomisili::SesuaiMutasiOrtuWali->value)
+                <td class="col-label">Instansi Penugasan</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->nama_instansi_mutasi ?? '-' }}</td>
+            @elseif ($siswa->status_domisili === \App\Enums\StatusDomisili::SesuaiDomisiliPondok->value)
+                <td class="col-label">Pondok Pesantren</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->nama_pondok_pesantren ?? '-' }}</td>
+            @elseif ($siswa->status_domisili === \App\Enums\StatusDomisili::SesuaiDomisiliPantiAsuhan->value)
+                <td class="col-label">Panti Asuhan</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->nama_panti_asuhan ?? '-' }}</td>
+            @else
+                <td class="col-label">-</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">-</td>
+            @endif
+        </tr>
+        @if ($siswa->status_domisili === \App\Enums\StatusDomisili::SesuaiMutasiOrtuWali->value)
+            <tr>
+                <td class="col-label">No. SK Mutasi</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->nomor_surat_penugasan ?? '-' }}</td>
+                <td class="col-label">Anak Guru / Tendik</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->is_anak_guru ? 'Ya' : 'Tidak' }}</td>
+            </tr>
+        @elseif ($siswa->status_domisili === \App\Enums\StatusDomisili::SesuaiDomisiliPondok->value)
+            <tr>
+                <td class="col-label">No. EMIS/NSPP</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->nomor_izin_pondok_emis ?? '-' }}</td>
+                <td class="col-label">Jenjang Pondok</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->jenjang_pondok ?? '-' }}</td>
+            </tr>
+        @elseif ($siswa->status_domisili === \App\Enums\StatusDomisili::SesuaiDomisiliPantiAsuhan->value)
+            <tr>
+                <td class="col-label">No. Reg. Dinsos</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->nomor_registrasi_dinsos ?? '-' }}</td>
+                <td class="col-label">Prioritas Panti</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $siswa->prioritas_panti ?? '-' }}</td>
+            </tr>
+        @endif
+    </table>
+
+    <div class="halaman-title">Akademik & Nilai Akhir</div>
+    <table class="data-table">
+        <tr>
+            <td class="col-label">Rata-rata Rapor (NRR)</td>
             <td class="col-sep">:</td>
-            <td class="col-val">{{ $siswa->tgl_cetak_kk ?? '-' }}</td>
+            <td class="col-val">{{ number_format($siswa->rata_rata_nilai_rapor, 2) }}</td>
+            <td class="col-label">Nilai TKA (NRTKA)</td>
+            <td class="col-sep">:</td>
+            <td class="col-val">{{ $siswa->nrtka !== null ? number_format($siswa->nrtka, 2) : '-' }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Nilai Kejuaraan (NK)</td>
+            <td class="col-sep">:</td>
+            <td class="col-val">{{ $siswa->nilai_kejuaraan ?? '0' }}</td>
+            <td class="col-label">Nilai Organisasi (NO)</td>
+            <td class="col-sep">:</td>
+            <td class="col-val">{{ $siswa->nilai_organisasi ?? '0' }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Nilai Akhir (NA)</td>
+            <td class="col-sep">:</td>
+            <td class="col-val" style="font-weight: bold;">{{ $siswa->nilai_akhir !== null ? number_format($siswa->nilai_akhir, 2) : '-' }}</td>
+            <td class="col-label">Status Prestasi</td>
+            <td class="col-sep">:</td>
+            <td class="col-val">{{ $siswa->status_prestasi ?? '-' }}</td>
         </tr>
     </table>
+
+    @if (!empty($activationCode) || !empty($siswa->activation_code))
+        <div class="halaman-title">Aktivasi Akun</div>
+        <table class="data-table">
+            <tr>
+                <td class="col-label">Activation Code</td>
+                <td class="col-sep">:</td>
+                <td class="col-val" style="font-weight: bold; letter-spacing: 1px;">{{ $activationCode ?? $siswa->activation_code }}</td>
+                <td class="col-label">NIP Operator</td>
+                <td class="col-sep">:</td>
+                <td class="col-val">{{ $operatorNip ?? $siswa->operator_nip ?? '-' }}</td>
+            </tr>
+        </table>
+    @endif
 
     <div class="footer-page-number">2</div>
 </div>

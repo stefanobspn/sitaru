@@ -8,11 +8,14 @@ use Livewire\Form;
 class UnggahBerkasSiswaForm extends Form
 {
     public ?TemporaryUploadedFile $suratPernyataanKebenaran = null;
+
     public ?TemporaryUploadedFile $kartuKeluarga = null;
+
     public ?TemporaryUploadedFile $suratKeteranganNilaiRapor = null;
 
     // conditional
     public ?TemporaryUploadedFile $piagamPrestasi = null;
+
     public ?TemporaryUploadedFile $skOrganisasi = null;
 
     public function rules(): array
@@ -33,6 +36,7 @@ class UnggahBerkasSiswaForm extends Form
         if ($akademik->requiresSkOrganisasi()) {
             $rules['skOrganisasi'] = $baseFileRule;
         }
+
         return $rules;
     }
 

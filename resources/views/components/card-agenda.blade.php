@@ -1,9 +1,11 @@
 @props([
     'agenda' => 'pendaftaran',
-    'currentAgenda' => false,
+    'currentAgenda' => null,
 ])
 
 @php
+    $currentAgenda = $currentAgenda ?? \App\Services\ScheduleService::isAgendaActive($agenda);
+
     $jadwalList = [
         'pendaftaran' => [
             'title' => 'Pendaftaran Akun',
@@ -42,9 +44,9 @@
 
 @if ($currentAgenda)
     {{-- Tampilan Aura Card saat jadwal sedang aktif --}}
-    <div {{ $attributes->merge(['class' => 'aura text-blue-500']) }}>
-        <div class="card bg-base-100 text-base-content h-48 md:h-64 rounded-lg shadow-sm">
-            <div class="card-body flex flex-col items-center justify-center gap-2 p-5 text-center">
+    <div {{ $attributes->merge(['class' => 'aura text-blue-500 w-full block']) }}>
+        <div class="card bg-base-100 text-base-content w-full h-48 md:h-64 rounded-lg flex flex-col items-center justify-center">
+            <div class="card-body flex flex-col items-center justify-center gap-2 p-5 text-center w-full">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-1 text-blue-500" viewBox="0 0 24 24">
                     <path d="M0 0h24v24H0z" fill="none" />
                     <path fill="currentColor" d="{{ $current['path'] }}" />
@@ -56,7 +58,7 @@
     </div>
 @else
     {{-- Tampilan Default --}}
-    <div {{ $attributes->merge(['class' => 'bg-[#7396B3] h-48 md:h-64 rounded-lg flex flex-col items-center justify-center gap-2 p-5 text-white text-center shadow-sm']) }}>
+    <div {{ $attributes->merge(['class' => 'bg-[#7396B3] w-full h-48 md:h-64 rounded-lg flex flex-col items-center justify-center gap-2 p-5 text-white text-center']) }}>
         <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-1" viewBox="0 0 24 24">
             <path d="M0 0h24v24H0z" fill="none" />
             <path fill="currentColor" d="{{ $current['path'] }}" />

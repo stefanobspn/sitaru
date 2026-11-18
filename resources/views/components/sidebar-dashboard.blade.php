@@ -19,7 +19,7 @@
                         <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z" />
                     </svg>
 
-                    <span class="invisible absolute inset-s-full top-1/2 ms-4 -translate-y-1/2 rounded-sm bg-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 group-hover:visible">
+                    <span class="invisible pointer-events-none absolute inset-s-full top-1/2 ms-4 -translate-y-1/2 rounded-sm bg-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 group-hover:visible">
                         Beranda
                     </span>
                 </a>
@@ -41,7 +41,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
 
-                    <span class="invisible absolute inset-s-full top-1/2 ms-4 -translate-y-1/2 rounded-sm bg-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 group-hover:visible">
+                    <span class="invisible pointer-events-none absolute inset-s-full top-1/2 ms-4 -translate-y-1/2 rounded-sm bg-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 group-hover:visible">
                         Manajemen SPMB
                     </span>
                 </a>
@@ -73,7 +73,7 @@
             </svg>
 
             <span
-                class="invisible absolute inset-s-full top-1/2 ms-4 -translate-y-1/2 rounded-sm bg-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 group-hover:visible"
+                class="invisible pointer-events-none absolute inset-s-full top-1/2 ms-4 -translate-y-1/2 rounded-sm bg-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 group-hover:visible"
             >
         Logout
       </span>

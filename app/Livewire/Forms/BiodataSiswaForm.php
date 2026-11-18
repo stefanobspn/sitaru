@@ -33,7 +33,7 @@ class BiodataSiswaForm extends Form
             ->where('nik', $this->nik)
             ->first();
 
-        if (!$result) {
+        if (! $result) {
             return false;
         }
 

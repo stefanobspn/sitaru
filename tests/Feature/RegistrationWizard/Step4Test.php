@@ -67,9 +67,9 @@ it('validates uploaded files must be pdf format', function (string $filename, st
         ->assertHasErrors(['berkas.suratPernyataanKebenaran' => 'mimes'])
         ->assertSet('currentStep', 4);
 })->with([
-    'png image'  => ['foto.png', 'image/png'],
-    'jpg image'  => ['foto.jpg', 'image/jpeg'],
-    'word docx'  => ['dokumen.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    'png image' => ['foto.png', 'image/png'],
+    'jpg image' => ['foto.jpg', 'image/jpeg'],
+    'word docx' => ['dokumen.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
 ]);
 
 it('validates uploaded files cannot exceed 1mb (1024 kb)', function () {
@@ -102,7 +102,6 @@ it('requires sk organisasi when applicant was an organization leader', function 
         ->assertSet('currentStep', 4);
 });
 
-
 it('advances to step 5 when regular applicant uploads all mandatory files', function () {
     step4Wizard()
         ->set('berkas.suratPernyataanKebenaran', fakePdf('pernyataan.pdf'))
@@ -128,4 +127,11 @@ it('advances to step 5 when applicant with achievements and organization uploads
         ->assertHasNoErrors()
         ->assertSet('currentStep', 5)
         ->assertSet('currentSubStep', 1);
+});
+
+it('navigates back from step 4 to step 3 substep 2 when previousStep is called', function () {
+    step4Wizard()
+        ->call('previousStep')
+        ->assertSet('currentStep', 3)
+        ->assertSet('currentSubStep', 2);
 });

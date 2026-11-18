@@ -8,10 +8,11 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'nip'])]
+#[Fillable(['name', 'email', 'password', 'role', 'nip', 'nisn'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -30,5 +31,15 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => UserRole::class,
         ];
+    }
+
+    public function sekolah(): HasOne
+    {
+        return $this->hasOne(Sekolah::class, 'operator_id');
+    }
+
+    public function registeredSiswa(): HasOne
+    {
+        return $this->hasOne(RegisteredSiswa::class);
     }
 }

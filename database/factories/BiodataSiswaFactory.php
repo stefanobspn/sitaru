@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class BiodataSiswaFactory extends Factory
 {
     protected $model = BiodataSiswa::class;
+
     public function definition(): array
     {
         return [
             'nisn' => $this->faker->unique()->numerify('00########'),
             'nik' => $this->faker->unique()->numerify('3307############'),
             'nama_lengkap' => $this->faker->name(),
-            'nama_sekolah_asal' => 'SMP Negeri ' . fake()->numberBetween(1, 10) . ' ' . fake()->city(),
+            'nama_sekolah_asal' => 'SMP Negeri '.fake()->numberBetween(1, 10).' '.fake()->city(),
             'tempat_lahir' => $this->faker->city(),
             'tanggal_lahir' => $this->faker->date('Y-m-d', '-15 years'),
             'alamat' => $this->faker->streetAddress(),
@@ -24,6 +25,7 @@ class BiodataSiswaFactory extends Factory
             'kelurahan' => 'Ngawi',
             'rt' => $this->faker->numerify('0##'),
             'rw' => $this->faker->numerify('0##'),
+            'nrtka' => fake()->randomFloat(2, 50, 90),
         ];
     }
 }

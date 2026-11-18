@@ -30,7 +30,7 @@
 
         <button wire:click="searchBiodata" class="btn btn-primary w-full mt-4">Cari</button>
         @error('biodata.searchBiodataError')
-            <div class="text-error text-md text-center mt-2">Data tidak ditemukan</div>
+            <div class="text-error text-md text-center mt-2">{{ $message }}</div>
         @enderror
     @elseif ($currentSubStep === 2)
         <div class="flow-root mb-8">
@@ -39,7 +39,11 @@
                     <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
                         <dt class="font-medium text-gray-900">{{ $label }}</dt>
                         <dd class="text-gray-700 lg:text-right sm:col-span-2">
-                            {{ $this->biodata->biodataDitemukan[$key] ?? '-' }}
+                            @if ($key === 'tanggal_lahir' && ! empty($this->biodata->biodataDitemukan[$key]))
+                                {{ \Carbon\Carbon::parse($this->biodata->biodataDitemukan[$key])->locale('id')->translatedFormat('d F Y') }}
+                            @else
+                                {{ $this->biodata->biodataDitemukan[$key] ?? '-' }}
+                            @endif
                         </dd>
                     </div>
                 @endforeach
