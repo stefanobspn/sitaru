@@ -369,17 +369,9 @@ class Operator extends Component
             'persetujuanTanggungJawab.accepted' => 'Anda harus mencentang pernyataan bahwa Anda paham dan bersedia bertanggung jawab.',
         ]);
 
-        $operatorNip = Auth::user()?->nip ?? '';
-
-        $this->foundSiswa->update([
-            'is_activated' => false,
-            'status_verifikasi' => 'ditolak',
-            'operator_nip' => $operatorNip,
-        ]);
-
-        $this->foundSiswa->refresh();
+        $this->foundSiswa->delete();
         $this->persetujuanTanggungJawab = false;
-        session()->flash('info', 'Pendaftaran siswa '.$this->foundSiswa->nama_lengkap.' telah ditolak.');
+        session()->flash('info', 'Pendaftaran siswa '.$this->foundSiswa->nama_lengkap.' telah ditolak dan dihapus.');
     }
 
     public function render(): View

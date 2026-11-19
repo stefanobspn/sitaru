@@ -17,6 +17,12 @@
             </div>
         @endif
 
+        @if (session()->has('error'))
+            <div role="alert" class="alert alert-error text-sm py-2 px-4 rounded-sm mb-4">
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
         @if ($activeMenu === 'beranda')
             <div class="space-y-6">
                 <div>
@@ -145,11 +151,11 @@
             </div>
         @elseif ($activeMenu === 'manage')
 
-            @if ($isCreatingSchool)
+            @if ($isCreatingSchool || $isEditingSchool)
                 <div>
                     <div class="flex flex-col mb-6">
                         <div>
-                            <h1 class="text-2xl font-bold">Tambah Sekolah Baru</h1>
+                            <h1 class="text-2xl font-bold">{{ $isEditingSchool ? 'Edit Data Sekolah' : 'Tambah Sekolah Baru' }}</h1>
                         </div>
                         <a
                             class="underline text-blue-500 cursor-pointer"
@@ -160,7 +166,7 @@
                     </div>
 
                     <div class="bg-white p-6 rounded-sm border border-slate-300">
-                        <form wire:submit="createSchool">
+                        <form wire:submit="{{ $isEditingSchool ? 'updateSchool' : 'createSchool' }}">
                             <x-input class="max-w-sm" name="npsn_sekolah" wire:model="npsn_sekolah" legend="NPSN Sekolah" required />
                             <x-input class="max-w-sm" name="nama_sekolah" wire:model="nama_sekolah" legend="Nama Sekolah" required />
                             <x-select class="max-w-sm" name="jenis_sekolah" wire:model.live="jenis_sekolah" legend="Jenis Sekolah" :options="['SMA', 'SMK']" required />
@@ -209,7 +215,9 @@
                             <x-input class="max-w-sm" name="nip_operator" wire:model="nip_operator" legend="NIP Operator" required />
                             <x-input class="max-w-sm" type="password" name="password_operator" wire:model="password_operator" legend="Password Operator" label="Opsional. Jika tidak diisi menggunakan password bawaan 'password'." />
                             <x-input class="max-w-sm" type="number" name="kuota_awal" wire:model="kuota_awal" legend="Kuota Awal" label="Opsional. Default 50." />
-                            <button type="submit" class="btn btn-primary mt-5">Tambahkan</button>
+                            <button type="submit" class="btn btn-primary mt-5">
+                                {{ $isEditingSchool ? 'Simpan Perubahan' : 'Tambahkan' }}
+                            </button>
                         </form>
                     </div>
                 </div>

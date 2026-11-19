@@ -11,6 +11,7 @@ use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\get;
 
 beforeEach(function () {
@@ -367,6 +368,80 @@ it('successfully creates an SMK with jurusans and saves to database', function (
             'Teknik Komputer dan Jaringan',
             'Desain Komunikasi Visual',
         ]);
+});
+
+it('updates a school and its operator from the management table', function () {
+    actingAs($this->admin);
+
+    $sekolah = Sekolah::factory()->smk(['RPL', 'TKJ'])->withOperator()->create(['kuota' => 80]);
+    $originalPassword = $sekolah->operator->password;
+
+    Livewire::test(Admin::class)
+        ->call('editSchool', $sekolah->id)
+        ->assertSet('activeMenu', 'manage')
+        ->assertSet('isEditingSchool', true)
+        ->set('npsn_sekolah', '20327991')
+        ->set('nama_sekolah', 'SMK Negeri Baru')
+        ->set('nip_operator', '199101012020011006')
+        ->set('kuota_awal', '100')
+        ->set('jurusans', ['RPL', 'Teknik Informatika'])
+        ->call('updateSchool')
+        ->assertHasNoErrors()
+        ->assertSet('isEditingSchool', false)
+        ->assertSee('SMK Negeri Baru');
+
+    assertDatabaseHas('sekolahs', [
+        'id' => $sekolah->id,
+        'npsn' => '20327991',
+        'nama_sekolah' => 'SMK Negeri Baru',
+        'kuota' => 100,
+    ]);
+    assertDatabaseHas('users', ['id' => $sekolah->operator_id, 'nip' => '199101012020011006']);
+    assertDatabaseHas('jurusans', ['sekolah_id' => $sekolah->id, 'nama_jurusan' => 'RPL']);
+    assertDatabaseHas('jurusans', ['sekolah_id' => $sekolah->id, 'nama_jurusan' => 'Teknik Informatika']);
+    expect($sekolah->operator->fresh()->password)->toBe($originalPassword);
+});
+
+it('deletes an unused school and its operator from the management table', function () {
+    actingAs($this->admin);
+
+    $sekolah = Sekolah::factory()->smk()->withOperator()->create();
+    $operatorId = $sekolah->operator_id;
+
+    Livewire::test(Admin::class)
+        ->call('setMenu', 'manage')
+        ->call('deleteSchool', $sekolah->id)
+        ->assertSee('Sekolah berhasil dihapus.')
+        ->assertDontSee($sekolah->nama_sekolah);
+
+    $this->assertModelMissing($sekolah);
+    assertDatabaseMissing('users', ['id' => $operatorId]);
+    assertDatabaseMissing('jurusans', ['sekolah_id' => $sekolah->id]);
+});
+
+it('keeps a school when a registered student has selected it', function () {
+    actingAs($this->admin);
+
+    $sekolah = Sekolah::factory()->create();
+    RegisteredSiswa::factory()->create(['pilihan_sekolah_1_id' => $sekolah->id]);
+
+    Livewire::test(Admin::class)
+        ->call('setMenu', 'manage')
+        ->call('deleteSchool', $sekolah->id)
+        ->assertSee('Sekolah tidak dapat dihapus karena masih digunakan oleh data pendaftar.');
+
+    $this->assertModelExists($sekolah);
+});
+
+it('forbids school changes for non-admin users', function () {
+    actingAs($this->operator);
+    $sekolah = Sekolah::factory()->create();
+
+    Livewire::test(Admin::class)
+        ->call('editSchool', $sekolah->id)
+        ->assertForbidden();
+
+    $this->assertModelExists($sekolah);
 });
 
 it('displays statistics on admin dashboard beranda', function () {

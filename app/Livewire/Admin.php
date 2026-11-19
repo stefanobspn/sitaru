@@ -10,6 +10,7 @@ use App\Services\SeleksiService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -25,6 +26,10 @@ class Admin extends Component
     public bool $remember = false;
 
     public bool $isCreatingSchool = false;
+
+    public bool $isEditingSchool = false;
+
+    public ?int $editingSchoolId = null;
 
     public string $npsn_sekolah = '';
 
@@ -44,6 +49,7 @@ class Admin extends Component
     {
         $this->activeMenu = $menu;
         $this->isCreatingSchool = false;
+        $this->isEditingSchool = false;
     }
 
     public function updatedJenisSekolah(string $value): void
@@ -68,16 +74,135 @@ class Admin extends Component
 
     public function openCreateSchoolForm(): void
     {
+        $this->authorizeAdmin();
         $this->isCreatingSchool = true;
+        $this->isEditingSchool = false;
+    }
+
+    public function editSchool(int $schoolId): void
+    {
+        $this->authorizeAdmin();
+
+        $sekolah = Sekolah::with('jurusans')->findOrFail($schoolId);
+        $this->editingSchoolId = $sekolah->id;
+        $this->npsn_sekolah = $sekolah->npsn;
+        $this->nama_sekolah = $sekolah->nama_sekolah;
+        $this->jenis_sekolah = $sekolah->jenis_sekolah;
+        $this->nip_operator = $sekolah->operator?->nip ?? '';
+        $this->password_operator = '';
+        $this->kuota_awal = (string) $sekolah->kuota;
+        $this->jurusans = $sekolah->jurusans->pluck('nama_jurusan')->all();
+        $this->isCreatingSchool = false;
+        $this->isEditingSchool = true;
+        $this->activeMenu = 'manage';
+        $this->resetValidation();
+    }
+
+    public function updateSchool(): void
+    {
+        $this->authorizeAdmin();
+
+        $sekolah = Sekolah::with('operator')->findOrFail($this->editingSchoolId);
+        $operator = $sekolah->operator;
+        $rules = [
+            'npsn_sekolah' => ['required', 'numeric', 'digits_between:6,10', Rule::unique('sekolahs', 'npsn')->ignore($sekolah->id)],
+            'nama_sekolah' => ['required', 'string', 'max:255'],
+            'jenis_sekolah' => ['required', 'in:SMA,SMK'],
+            'nip_operator' => ['required', 'numeric', 'digits_between:8,20', Rule::unique('users', 'nip')->ignore($operator?->id)],
+            'password_operator' => ['nullable', 'string', 'min:4'],
+            'kuota_awal' => ['required', 'integer', 'min:1'],
+        ];
+
+        if ($this->jenis_sekolah === 'SMK') {
+            $rules['jurusans'] = ['required', 'array', 'min:2'];
+            $rules['jurusans.*'] = ['required', 'string', 'max:255', 'distinct'];
+        }
+
+        $validated = $this->validate($rules);
+
+        DB::transaction(function () use ($sekolah, $operator, $validated): void {
+            $sekolah->update([
+                'npsn' => $validated['npsn_sekolah'],
+                'nama_sekolah' => $validated['nama_sekolah'],
+                'jenis_sekolah' => $validated['jenis_sekolah'],
+                'kuota' => (int) $validated['kuota_awal'],
+            ]);
+
+            if ($operator !== null) {
+                $operatorAttributes = ['nip' => $validated['nip_operator']];
+                if (filled($validated['password_operator'])) {
+                    $operatorAttributes['password'] = $validated['password_operator'];
+                }
+                $operator->update($operatorAttributes);
+            } else {
+                $operator = User::create([
+                    'nip' => $validated['nip_operator'],
+                    'password' => filled($validated['password_operator']) ? $validated['password_operator'] : 'password',
+                    'role' => UserRole::Operator,
+                ]);
+                $sekolah->operator()->associate($operator)->save();
+            }
+
+            if ($validated['jenis_sekolah'] === 'SMK') {
+                $sekolah->jurusans()->whereNotIn('nama_jurusan', $validated['jurusans'])->delete();
+                $existingJurusans = $sekolah->jurusans()->pluck('nama_jurusan')->all();
+                foreach ($validated['jurusans'] as $namaJurusan) {
+                    $namaJurusan = trim($namaJurusan);
+                    if (! in_array($namaJurusan, $existingJurusans, true)) {
+                        $sekolah->jurusans()->create(['nama_jurusan' => $namaJurusan]);
+                    }
+                }
+            } else {
+                $sekolah->jurusans()->delete();
+            }
+        });
+
+        session()->flash('success', 'Data sekolah berhasil diperbarui.');
+        $this->closeCreateSchoolForm();
+    }
+
+    public function deleteSchool(int $schoolId): void
+    {
+        $this->authorizeAdmin();
+
+        $sekolah = Sekolah::with('operator')->findOrFail($schoolId);
+        $isUsed = RegisteredSiswa::query()
+            ->where(function ($query) use ($schoolId): void {
+                $query->where('pilihan_sekolah_1_id', $schoolId)
+                    ->orWhere('pilihan_sekolah_2_id', $schoolId)
+                    ->orWhere('diterima_sekolah_id', $schoolId);
+            })
+            ->exists();
+
+        if ($isUsed) {
+            session()->flash('error', 'Sekolah tidak dapat dihapus karena masih digunakan oleh data pendaftar.');
+
+            return;
+        }
+
+        DB::transaction(function () use ($sekolah): void {
+            $operator = $sekolah->operator;
+            $sekolah->jurusans()->delete();
+            $sekolah->delete();
+            $operator?->delete();
+        });
+
+        session()->flash('success', 'Sekolah berhasil dihapus.');
+    }
+
+    private function authorizeAdmin(): void
+    {
+        abort_unless(Auth::user()?->role === UserRole::Admin, 403);
     }
 
     public function closeCreateSchoolForm(): void
     {
-        $this->reset(['npsn_sekolah', 'nama_sekolah', 'nip_operator', 'password_operator', 'jurusans']);
+        $this->reset(['npsn_sekolah', 'nama_sekolah', 'nip_operator', 'password_operator', 'jurusans', 'editingSchoolId']);
         $this->jenis_sekolah = 'SMA';
         $this->resetValidation();
         $this->kuota_awal = '50';
         $this->isCreatingSchool = false;
+        $this->isEditingSchool = false;
     }
 
     public function createSchool(): void

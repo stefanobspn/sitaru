@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\get;
 
 beforeEach(function () {
@@ -271,7 +272,7 @@ it('requires responsibility confirmation checkbox before rejecting', function ()
         ->assertHasErrors(['persetujuanTanggungJawab' => 'accepted']);
 });
 
-it('successfully rejects student and updates database with operator nip', function () {
+it('deletes student data when operator rejects the registration', function () {
     actingAs($this->operator);
 
     $siswa = RegisteredSiswa::factory()->create([
@@ -289,10 +290,9 @@ it('successfully rejects student and updates database with operator nip', functi
         ->call('tolakSiswa')
         ->assertHasNoErrors();
 
-    $siswa->refresh();
-    expect($siswa->is_activated)->toBeFalse()
-        ->and($siswa->status_verifikasi)->toBe('ditolak')
-        ->and($siswa->operator_nip)->toBe($this->operator->nip);
+    assertDatabaseMissing('registered_siswas', [
+        'id' => $siswa->id,
+    ]);
 });
 
 it('renders pdf bukti pendaftaran with activation code and operator nip', function () {
