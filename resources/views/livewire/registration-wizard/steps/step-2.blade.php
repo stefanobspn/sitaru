@@ -87,7 +87,7 @@
             </li>
         </ul>
 
-        <div class="ml-2">
+        <div class="ml-0 sm:ml-2">
             <x-input wire:model="kontakDomisili.pastedCoordinate" name="koordinat" legend="Paste Koordinat" class="max-w-sm" required />
             <button wire:click="renderCoordinate" class="btn btn-primary mt-2">Cek</button>
 
@@ -135,7 +135,7 @@
                 x-on:render-map.window="handleRenderMap($event.detail.lat, $event.detail.lng)"
                 x-show="showMap"
                 style="display: none;"
-                class="mt-4"
+                class="mt-4 w-full"
             >
                 <div x-ref="mapContainer" class="w-full h-72 border border-slate-300 z-0 pointer-events-none"></div>
                 <button wire:click="nextStep" class="btn btn-primary mt-4">Konfirmasi</button>

@@ -45,25 +45,25 @@
 @if ($currentAgenda)
     {{-- Tampilan Aura Card saat jadwal sedang aktif --}}
     <div {{ $attributes->merge(['class' => 'aura text-blue-500 w-full block']) }}>
-        <div class="card bg-base-100 text-base-content w-full h-48 md:h-64 rounded-lg flex flex-col items-center justify-center">
-            <div class="card-body flex flex-col items-center justify-center gap-2 p-5 text-center w-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-1 text-blue-500" viewBox="0 0 24 24">
+        <div class="card bg-base-100 text-base-content w-full h-44 sm:h-48 md:h-64 rounded-lg flex flex-col items-center justify-center">
+            <div class="card-body flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-5 text-center w-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 sm:w-12 sm:h-12 mb-1 text-blue-500 shrink-0" viewBox="0 0 24 24">
                     <path d="M0 0h24v24H0z" fill="none" />
                     <path fill="currentColor" d="{{ $current['path'] }}" />
                 </svg>
-                <span class="text-lg font-semibold tracking-wide">{{ $current['title'] }}</span>
-                <span class="text-sm font-medium opacity-80">{{ $current['date'] }}</span>
+                <span class="text-sm sm:text-base md:text-lg font-semibold tracking-tight sm:tracking-wide leading-tight sm:leading-normal">{{ $current['title'] }}</span>
+                <span class="text-xs sm:text-sm font-medium opacity-80">{{ $current['date'] }}</span>
             </div>
         </div>
     </div>
 @else
     {{-- Tampilan Default --}}
-    <div {{ $attributes->merge(['class' => 'bg-[#7396B3] w-full h-48 md:h-64 rounded-lg flex flex-col items-center justify-center gap-2 p-5 text-white text-center']) }}>
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-1" viewBox="0 0 24 24">
+    <div {{ $attributes->merge(['class' => 'bg-[#7396B3] w-full h-44 sm:h-48 md:h-64 rounded-lg flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-3 sm:p-5 text-white text-center']) }}>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 sm:w-12 sm:h-12 mb-1 shrink-0" viewBox="0 0 24 24">
             <path d="M0 0h24v24H0z" fill="none" />
             <path fill="currentColor" d="{{ $current['path'] }}" />
         </svg>
-        <span class="text-lg font-semibold tracking-wide">{{ $current['title'] }}</span>
-        <span class="text-sm font-medium text-white/90">{{ $current['date'] }}</span>
+        <span class="text-sm sm:text-base md:text-lg font-semibold tracking-tight sm:tracking-wide leading-tight sm:leading-normal">{{ $current['title'] }}</span>
+        <span class="text-xs sm:text-sm font-medium text-white/90">{{ $current['date'] }}</span>
     </div>
 @endif

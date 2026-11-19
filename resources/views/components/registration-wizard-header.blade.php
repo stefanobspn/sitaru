@@ -9,8 +9,8 @@
     $currentStep = $currentStep ?? 1;
 @endphp
 
-<div class="bg-white p-5 w-full">
-    <div class="flex items-center justify-between max-w-4xl mx-auto">
+<div class="w-full overflow-x-auto bg-white p-3 sm:p-5">
+    <div class="mx-auto flex min-w-[36rem] items-center justify-between sm:min-w-0 sm:max-w-4xl">
         @foreach ($steps as $stepNumber => $stepLabel)
             @php
                 $isCompleted = $stepNumber < $currentStep;

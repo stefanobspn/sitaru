@@ -11,7 +11,7 @@
 <body class="bg-white text-gray-900 antialiased">
 
 <!-- Header / Navigasi Utama -->
-<header x-data="{ mobileMenuOpen: false }" class="sticky top-0 z-50 w-full bg-white border-b border-slate-200">
+<header id="site-header" class="sticky top-0 z-50 w-full border-b border-slate-200 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 md:h-20">
             <!-- Brand / Logo -->
@@ -46,15 +46,17 @@
             <!-- Mobile Hamburger Button -->
             <div class="flex md:hidden items-center">
                 <button
+                    id="mobile-menu-toggle"
                     type="button"
-                    @click="mobileMenuOpen = !mobileMenuOpen"
                     class="p-2 rounded-sm text-gray-600 hover:text-gray-900 hover:bg-slate-100 focus:outline-none"
-                    aria-label="Toggle navigation menu"
+                    aria-label="Buka menu navigasi"
+                    aria-controls="mobile-menu"
+                    aria-expanded="false"
                 >
-                    <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg id="mobile-menu-open-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
-                    <svg x-show="mobileMenuOpen" x-cloak class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg id="mobile-menu-close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
@@ -63,22 +65,17 @@
     </div>
 
     <!-- Mobile Nav Drawer -->
-    <div
-        x-show="mobileMenuOpen"
-        x-cloak
-        @click.outside="mobileMenuOpen = false"
-        class="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-5 space-y-3"
-    >
+    <div id="mobile-menu" class="hidden space-y-3 border-t border-slate-200 bg-white px-4 pt-3 pb-5 md:hidden">
         <div class="flex flex-col space-y-2 text-sm font-medium text-gray-700">
-            <a href="#beranda" @click="mobileMenuOpen = false" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">Beranda</a>
-            <a href="#alur" @click="mobileMenuOpen = false" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">Alur Pendaftaran</a>
-            <a href="#statistik" @click="mobileMenuOpen = false" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">Statistik</a>
+            <a href="#beranda" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">Beranda</a>
+            <a href="#alur" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">Alur Pendaftaran</a>
+            <a href="#statistik" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">Statistik</a>
             <a href="{{ route('seleksi') }}" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080] flex items-center justify-between">
                 <span>Jurnal Seleksi</span>
                 <span class="badge badge-primary badge-xs py-1 px-1.5 text-[9px] text-white">Live</span>
             </a>
-            <a href="#sambutan" @click="mobileMenuOpen = false" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">Sambutan</a>
-            <a href="#faq" @click="mobileMenuOpen = false" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">FAQ</a>
+            <a href="#sambutan" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">Sambutan</a>
+            <a href="#faq" class="px-2 py-1.5 rounded-sm hover:bg-slate-100 hover:text-[#165080]">FAQ</a>
         </div>
         <div class="pt-3 border-t border-slate-200 flex flex-col gap-2">
             <a href="{{ route('siswa') }}" class="text-center text-xs font-semibold px-4 py-2.5 text-gray-700 border border-slate-300 rounded-sm hover:bg-slate-50 transition">
@@ -97,20 +94,20 @@
 
 <main class="w-full">
     <!-- Hero Section -->
-    <section id="beranda" class="bg-[#165080] w-full p-6 md:p-16">
+    <section id="beranda" class="w-full bg-[#165080] p-4 sm:p-6 md:p-16">
         <p class="text-white text-sm md:text-base opacity-90">Selamat datang di</p>
-        <h1 class="text-white text-3xl md:text-4xl font-bold max-w-xl leading-tight mt-2">
+        <h1 class="mt-2 max-w-xl text-2xl font-bold leading-tight text-white sm:text-3xl md:text-4xl">
             Sistem Penerimaan Murid Baru (SPMB) Provinsi Jawa Tengah Jenjang SMA dan SMK
         </h1>
 
-        <div class="flex flex-wrap gap-3 mt-6 md:mt-8">
-            <a href="{{ route('daftar') }}" class="inline-block bg-white text-[#165080] font-semibold px-8 py-2.5 rounded-sm hover:bg-gray-100 transition">
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap md:mt-8">
+            <a href="{{ route('daftar') }}" class="inline-block rounded-sm bg-white px-8 py-2.5 text-center font-semibold text-[#165080] transition hover:bg-gray-100 sm:w-auto">
                 Ajukan Akun
             </a>
-            <a href="{{ route('aktivasi') }}" class="inline-block bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-sm hover:bg-blue-800 transition">
+            <a href="{{ route('aktivasi') }}" class="inline-block rounded-sm bg-blue-700 px-6 py-2.5 text-center font-semibold text-white transition hover:bg-blue-800 sm:w-auto">
                 Aktivasi Akun
             </a>
-            <a href="{{ route('siswa') }}" class="inline-block bg-transparent text-white border border-white font-semibold px-6 py-2.5 rounded-sm hover:bg-white/10 transition">
+            <a href="{{ route('siswa') }}" class="inline-block rounded-sm border border-white bg-transparent px-6 py-2.5 text-center font-semibold text-white transition hover:bg-white/10 sm:w-auto">
                 Login Siswa
             </a>
         </div>
@@ -139,22 +136,22 @@
     </section>
 
     <!-- Live Statistik -->
-    <section id="statistik" class="bg-[#0E304D] w-full p-8 md:p-16 scroll-mt-64">
+    <section id="statistik" class="w-full scroll-mt-24 bg-[#0E304D] p-5 sm:p-8 md:scroll-mt-64 md:p-16">
         <h2 class="text-white text-2xl md:text-3xl font-bold text-center">Live Statistik</h2>
 
-        <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-8">
+        <div class="mt-8 grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {{-- Total Pendaftar --}}
-            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md flex flex-col items-center justify-center p-4">
+            <div class="flex h-32 w-full max-w-sm flex-col items-center justify-center rounded-md bg-[#165080] p-4">
                 <span class="text-white text-5xl font-bold">{{ number_format($totalPendaftar) }}</span>
                 <span class="mt-3 text-white font-medium">Total Pendaftar</span>
             </div>
             {{-- Pendaftar Hari Ini  --}}
-            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md flex flex-col items-center justify-center p-4">
+            <div class="flex h-32 w-full max-w-sm flex-col items-center justify-center rounded-md bg-[#165080] p-4">
                 <span class="text-white text-5xl font-bold">{{ number_format($pendaftarHariIni) }}</span>
                 <span class="mt-3 text-white font-medium">Pendaftar Hari Ini</span>
             </div>
             {{-- Total Kuota --}}
-            <div class="bg-[#165080] h-32 w-full sm:w-64 rounded-md flex flex-col items-center justify-center p-4">
+            <div class="flex h-32 w-full max-w-sm flex-col items-center justify-center rounded-md bg-[#165080] p-4">
                 <span class="text-white text-5xl font-bold">{{ number_format($totalKuota) }}</span>
                 <span class="mt-3 text-white font-medium">Total Kuota Tersedia</span>
             </div>
@@ -162,7 +159,7 @@
     </section>
 
     <!-- Kata Sambutan -->
-    <section id="sambutan" class="bg-[#D0DCE6] w-full p-8 md:p-16 scroll-mt-64">
+    <section id="sambutan" class="w-full scroll-mt-24 bg-[#D0DCE6] p-5 sm:p-8 md:scroll-mt-64 md:p-16">
         <h2 class="text-[#333B40] text-2xl md:text-3xl font-bold text-center mb-10">Kata Sambutan</h2>
 
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-10 items-center md:items-start">
@@ -223,7 +220,7 @@
     </section>
 
     <!-- FAQ -->
-    <section id="faq" class="bg-white w-full p-8 md:p-16 scroll-mt-24">
+    <section id="faq" class="w-full scroll-mt-20 bg-white p-5 sm:p-8 md:p-16">
         <h2 class="text-[#333B40] text-2xl md:text-3xl font-bold text-center mt-12 md:mt-16 mb-10">Pertanyaan yang Sering Diajukan (FAQ)</h2>
 
         <div class="w-full flex justify-center items-center flex-col gap-4 max-w-3xl mx-auto">
@@ -302,6 +299,50 @@
         </div>
     </div>
 </footer>
+
+<script>
+    const siteHeader = document.getElementById('site-header');
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOpenIcon = document.getElementById('mobile-menu-open-icon');
+    const mobileMenuCloseIcon = document.getElementById('mobile-menu-close-icon');
+
+    const setMobileMenuOpen = (isOpen) => {
+        mobileMenu.classList.toggle('hidden', !isOpen);
+        mobileMenuOpenIcon.classList.toggle('hidden', isOpen);
+        mobileMenuCloseIcon.classList.toggle('hidden', !isOpen);
+        mobileMenuToggle.setAttribute('aria-expanded', String(isOpen));
+        mobileMenuToggle.setAttribute('aria-label', isOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi');
+    };
+
+    mobileMenuToggle.addEventListener('click', () => {
+        setMobileMenuOpen(mobileMenu.classList.contains('hidden'));
+    });
+
+    mobileMenu.addEventListener('click', (event) => {
+        if (event.target.closest('a')) {
+            setMobileMenuOpen(false);
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!siteHeader.contains(event.target)) {
+            setMobileMenuOpen(false);
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            setMobileMenuOpen(false);
+        }
+    });
+
+    window.matchMedia('(min-width: 768px)').addEventListener('change', (event) => {
+        if (event.matches) {
+            setMobileMenuOpen(false);
+        }
+    });
+    </script>
 
 </body>
 

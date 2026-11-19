@@ -1,8 +1,8 @@
 @props(['activeMenu' => 'beranda'])
 
-<div class="flex h-screen w-16 flex-col justify-between border-e border-slate-300 bg-white">
-    <div>
-        <ul class="space-y-1 border-t border-gray-100 px-2 pt-4">
+<div class="flex h-auto w-full shrink-0 flex-row justify-between border-b border-slate-300 bg-white md:h-screen md:w-16 md:flex-col md:border-b-0 md:border-e">
+    <div class="w-full md:w-auto">
+        <ul class="flex justify-around gap-1 border-gray-100 px-2 py-2 md:flex-col md:space-y-1 md:border-t md:pt-4">
             <li>
                 <a
                     wire:click.prevent="setMenu('beranda')"
@@ -49,7 +49,7 @@
         </ul>
     </div>
 
-    <div class="sticky inset-x-0 bottom-0 border-t border-gray-100 bg-white p-2">
+    <div class="border-s border-gray-100 bg-white p-2 md:sticky md:inset-x-0 md:bottom-0 md:border-s-0 md:border-t">
         <a
             wire:click="logout"
             href="#"

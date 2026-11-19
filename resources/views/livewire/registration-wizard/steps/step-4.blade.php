@@ -4,7 +4,7 @@
         Format berkas harus berupa <span class="font-semibold text-slate-700">PDF</span> dengan ukuran maksimal <span class="font-semibold text-slate-700">1 MB</span> per dokumen.
     </p>
 
-    <div class="mt-4 grid grid-cols-2 gap-6">
+    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
         {{-- wajib --}}
         <x-file-uploaders wire:model="berkas.suratPernyataanKebenaran" legend="Surat Pernyataan Kebenaran" required/>
         <x-file-uploaders wire:model="berkas.kartuKeluarga" legend="Kartu Keluarga" required/>
@@ -20,7 +20,7 @@
         @endif
     </div>
 
-    <div class="mt-6 flex justify-end">
-        <button wire:click="submitBerkas" class="btn btn-primary">Lanjutkan</button>
+    <div class="mt-6 flex justify-stretch sm:justify-end">
+        <button wire:click="submitBerkas" class="btn btn-primary w-full sm:w-auto">Lanjutkan</button>
     </div>
 </div>

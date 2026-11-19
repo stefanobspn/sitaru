@@ -1,7 +1,7 @@
-<div class="flex h-screen bg-slate-50">
+<div class="flex min-h-screen flex-col bg-slate-50 md:h-screen md:flex-row">
     <x-sidebar-dashboard :active-menu="$activeMenu"/>
 
-    <main class="flex-1 overflow-y-auto p-6">
+    <main class="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">
         @if (session()->has('success'))
             <div
                 x-data="{ show: true }"

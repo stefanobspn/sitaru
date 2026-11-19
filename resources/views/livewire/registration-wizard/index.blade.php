@@ -1,9 +1,9 @@
 <div>
     <x-registration-wizard-header :availableSteps="$availableSteps" :currentStep="$currentStep" />
 
-    <main class="w-full flex flex-col items-center px-4 py-12">
+    <main class="flex w-full flex-col items-center px-3 py-6 sm:px-4 sm:py-12">
         <x-registration-wizard-title :availableSteps="$availableSteps" :currentStep="$currentStep" class="{{ $maxWidth }}" />
-        <div class="w-full {{ $maxWidth }} border border-slate-300 rounded-sm p-8 bg-white">
+        <div class="w-full min-w-0 {{ $maxWidth }} rounded-sm border border-slate-300 bg-white p-4 sm:p-6 md:p-8">
             @if (! $isPengajuanAkunOpen && $currentStep < 6)
                 <div class="text-center py-6">
                     <div class="inline-flex items-center justify-center w-14 h-14 rounded-full {{ $pengajuanAkunStatus === 'closed' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700' }} mb-4">
